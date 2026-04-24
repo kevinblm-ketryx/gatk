@@ -19,13 +19,26 @@ import java.util.stream.IntStream;
 
 public class ReadOrientationFilter extends Mutect2VariantFilter {
     private Map<String, ArtifactPriorCollection> artifactPriorCollections = new HashMap<>();
+    private final double ffpeDeaminationBoost;
 
     public ReadOrientationFilter(final List<File> readOrientationPriorTables) {
+        this(readOrientationPriorTables, false, 1.0);
+    }
+
+    public ReadOrientationFilter(final List<File> readOrientationPriorTables, final boolean ffpeMode,
+                                 final double ffpeDeaminationPriorBoost) {
         readOrientationPriorTables.stream()
                 .forEach(file -> {
                     final ArtifactPriorCollection artifactPriorCollection = ArtifactPriorCollection.readArtifactPriors(file);
                     artifactPriorCollections.put(artifactPriorCollection.getSample(), artifactPriorCollection);
                 });
+        this.ffpeDeaminationBoost = ffpeMode ? Math.max(1.0, ffpeDeaminationPriorBoost) : 1.0;
+    }
+
+    // Cytosine deamination from formalin fixation shows up as C>T on the reference strand or G>A on
+    // its reverse complement, producing the classic FFPE orientation-bias signature.
+    private static boolean isDeaminationSubstitution(final Nucleotide ref, final Nucleotide alt) {
+        return (ref == Nucleotide.C && alt == Nucleotide.T) || (ref == Nucleotide.G && alt == Nucleotide.A);
     }
 
     public static int[] getF1R2(final Genotype g) {
@@ -129,6 +142,10 @@ public class ReadOrientationFilter extends Mutect2VariantFilter {
         final double posteriorOfF1R2 = posterior[ArtifactState.getF1R2StateForAlt(altBase).ordinal()];
         final double posteriorOfF2R1 = posterior[ArtifactState.getF2R1StateForAlt(altBase).ordinal()];
 
-        return Math.max(posteriorOfF1R2, posteriorOfF2R1);
+        final double rawArtifactPosterior = Math.max(posteriorOfF1R2, posteriorOfF2R1);
+        if (ffpeDeaminationBoost > 1.0 && isDeaminationSubstitution(refAllele, altBase)) {
+            return Math.min(1.0, rawArtifactPosterior * ffpeDeaminationBoost);
+        }
+        return rawArtifactPosterior;
     }
 }

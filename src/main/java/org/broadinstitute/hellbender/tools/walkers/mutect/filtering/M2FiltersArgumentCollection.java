@@ -50,6 +50,34 @@ public class M2FiltersArgumentCollection {
     @Argument(fullName = M2ArgumentCollection.MICROBIAL_MODE_LONG_NAME, optional = true, doc = "Set filters to microbial defaults")
     public boolean microbial = false;
 
+    /**
+     * FFPE (formalin-fixed paraffin-embedded) mode. FFPE tissue preparation causes cytosine
+     * deamination, producing a characteristic C>T / G>A strand-orientation artifact that inflates
+     * the somatic false-positive rate in {@link ReadOrientationFilter} and {@link ContaminationFilter}.
+     * When enabled, the read-orientation artifact posterior is boosted for C>T and G>A substitutions,
+     * and the contamination estimate is scaled up, making both filters more aggressive at suppressing
+     * deamination-driven false positives. For best results, supply --orientation-bias-artifact-priors
+     * learned from an FFPE-matched panel.
+     */
+    public static final String FFPE_MODE_LONG_NAME = "ffpe-mode";
+    public static final String FFPE_DEAMINATION_PRIOR_BOOST_LONG_NAME = "ffpe-deamination-prior-boost";
+    public static final String FFPE_CONTAMINATION_BOOST_LONG_NAME = "ffpe-contamination-boost";
+
+    private static final double DEFAULT_FFPE_DEAMINATION_PRIOR_BOOST = 3.0;
+    private static final double DEFAULT_FFPE_CONTAMINATION_BOOST = 1.5;
+
+    @Argument(fullName = FFPE_MODE_LONG_NAME, optional = true,
+            doc = "Enable FFPE mode: strengthen the orientation-bias and contamination filters against cytosine-deamination artifacts (C>T / G>A) from formalin fixation.")
+    public boolean ffpeMode = false;
+
+    @Argument(fullName = FFPE_DEAMINATION_PRIOR_BOOST_LONG_NAME, optional = true,
+            doc = "Multiplicative boost applied to the read-orientation artifact posterior for C>T and G>A substitutions when --ffpe-mode is set. Must be >= 1.0; the effective posterior is capped at 1.0.")
+    public double ffpeDeaminationPriorBoost = DEFAULT_FFPE_DEAMINATION_PRIOR_BOOST;
+
+    @Argument(fullName = FFPE_CONTAMINATION_BOOST_LONG_NAME, optional = true,
+            doc = "Multiplicative boost applied to contamination estimates when --ffpe-mode is set. Must be >= 1.0; the effective value is capped just below 1.0.")
+    public double ffpeContaminationBoost = DEFAULT_FFPE_CONTAMINATION_BOOST;
+
 
     /**
      * Hard filter thresholds

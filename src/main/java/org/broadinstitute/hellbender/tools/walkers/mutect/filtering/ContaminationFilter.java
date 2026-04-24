@@ -18,14 +18,21 @@ import java.util.stream.Collectors;
 public class ContaminationFilter extends Mutect2AlleleFilter {
     private final Map<String, Double> contaminationBySample;
     private final double defaultContamination;
+    private final double contaminationBoost;
     private final double EPSILON = 1.0e-10;
 
     public ContaminationFilter(final List<File> contaminationTables, final double contaminationEstimate) {
+        this(contaminationTables, contaminationEstimate, false, 1.0);
+    }
+
+    public ContaminationFilter(final List<File> contaminationTables, final double contaminationEstimate,
+                               final boolean ffpeMode, final double ffpeContaminationBoost) {
         contaminationBySample = contaminationTables.stream()
                 .map(file -> ContaminationRecord.readFromFile(file).get(0))
                 .collect(Collectors.toMap(rec -> rec.getSample(), rec -> rec.getContamination()));
 
         defaultContamination = contaminationEstimate;
+        contaminationBoost = ffpeMode ? Math.max(1.0, ffpeContaminationBoost) : 1.0;
     }
 
     @Override
@@ -43,7 +50,10 @@ public class ContaminationFilter extends Mutect2AlleleFilter {
             }
 
             final double contaminationFromFile = contaminationBySample.getOrDefault(tumorGenotype.getSampleName(), defaultContamination);
-            final double contamination = Math.max(0, Math.min(contaminationFromFile, 1 - EPSILON)); // handle file with contamination == 1
+            // FFPE mode scales up the contamination estimate so low-AF C>T/G>A deamination artifacts
+            // are more aggressively attributed to contamination rather than true somatic variants.
+            final double boostedContamination = contaminationFromFile * contaminationBoost;
+            final double contamination = Math.max(0, Math.min(boostedContamination, 1 - EPSILON)); // handle file with contamination == 1
             final int[] ADs = tumorGenotype.getAD();
             final int totalAD = (int) MathUtils.sum(ADs);
             final int[] altADs = Arrays.copyOfRange(ADs, 1, ADs.length); // get ADs of alts only
