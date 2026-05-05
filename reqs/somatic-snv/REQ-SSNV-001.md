@@ -13,3 +13,9 @@ The system shall detect somatic single-nucleotide variants (SNVs) and small inse
 3. Somatic SNV sensitivity shall be ≥ 95.0 % at ≥ 10 % variant allele frequency (VAF) on the DREAM Challenge synthetic tumor truth set.
 4. The tool shall support panel-of-normals (PoN) filtering to suppress recurrent technical artifacts.
 5. Tumor-only mode shall be supported for samples without a matched normal.
+
+## Traceability
+
+- Implemented by: SPEC-SSNV-001
+- Verified by: TC-SSNV-001
+- Risk-controlled by: RISK-SSNV-001
