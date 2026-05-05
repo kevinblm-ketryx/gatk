@@ -37,7 +37,8 @@ public class ReadOrientationFilter extends Mutect2VariantFilter {
 
     // Cytosine deamination from formalin fixation shows up as C>T on the reference strand or G>A on
     // its reverse complement, producing the classic FFPE orientation-bias signature.
-    private static boolean isDeaminationSubstitution(final Nucleotide ref, final Nucleotide alt) {
+    @VisibleForTesting
+    static boolean isDeaminationSubstitution(final Nucleotide ref, final Nucleotide alt) {
         return (ref == Nucleotide.C && alt == Nucleotide.T) || (ref == Nucleotide.G && alt == Nucleotide.A);
     }
 
