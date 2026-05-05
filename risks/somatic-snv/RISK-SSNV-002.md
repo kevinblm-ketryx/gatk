@@ -18,9 +18,9 @@ Sequencing artifacts (OxoG damage, FFPE deamination, strand bias) pass filtering
 Patient undergoes unnecessary targeted therapy or is enrolled in an inappropriate clinical trial based on an artifactual variant call, exposing them to treatment side effects without therapeutic benefit.
 
 ## Risk Controls
-1. **Specification-level**: FilterMutectCalls applies orientation bias, strand bias, and contamination filters specifically designed to remove these artifact classes.
+1. **Specification-level**: FilterMutectCalls applies orientation bias, strand bias, and contamination filters specifically designed to remove these artifact classes. For FFPE-fixed tumor samples, the optional `--ffpe-mode` flag (see SPEC-SSNV-002) tightens the orientation-bias and contamination filters specifically for the C>T / G>A deamination signature.
 2. **Verification-level**: TC-SSNV-002 validates that filtering achieves FDR ≤ 5 % on synthetic tumor data, confirming artifact suppression effectiveness.
-3. **Operational**: Clinical labs should include OxoG and FFPE artifact metrics in their QC pipeline and reject samples exceeding artifact thresholds.
+3. **Operational**: Clinical labs should include OxoG and FFPE artifact metrics in their QC pipeline and reject samples exceeding artifact thresholds. Labs processing FFPE specimens should enable `--ffpe-mode` and pair it with orientation-bias priors learned from an FFPE-matched panel via LearnReadOrientationModel.
 
 ## Residual Risk Justification
 The multi-layer filtering approach (orientation bias + strand bias + contamination) effectively suppresses the most common artifact classes. Residual FDR ≤ 5 % is clinically acceptable and consistent with industry standards for somatic variant calling.
