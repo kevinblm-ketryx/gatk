@@ -36,3 +36,10 @@ Mutect2 is a somatic variant caller that identifies SNVs and indels by comparing
 | `--normal-sample` | (optional) | Matched normal sample name |
 | `--panel-of-normals` | none | PoN VCF for artifact suppression |
 | `--af-of-alleles-not-in-resource` | 5.0 × 10⁻⁶ | Prior allele frequency for unlisted alleles |
+
+## Traceability
+
+- Fulfills: REQ-SSNV-001
+- Verified by: TC-SSNV-001
+- Risk-controlled by: RISK-SSNV-001
+- Downstream: SPEC-SSNV-002 (FilterMutectCalls consumes Mutect2 output)
