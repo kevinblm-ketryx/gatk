@@ -287,7 +287,8 @@ public class Mutect2FilteringEngine {
         filters.add(new MappingQualityFilter(MTFAC.getMinMedianMappingQuality(), MTFAC.longIndelLength));
         filters.add(new DuplicatedAltReadFilter(MTFAC.uniqueAltReadCount));
         filters.add(new StrandArtifactFilter());
-        filters.add(new ContaminationFilter(MTFAC.contaminationTables, MTFAC.contaminationEstimate));
+        filters.add(new ContaminationFilter(MTFAC.contaminationTables, MTFAC.contaminationEstimate,
+                MTFAC.ffpeMode, MTFAC.ffpeContaminationBoost));
         filters.add(new StrictStrandBiasFilter(MTFAC.minReadsOnEachStrand));
         filters.add(new ReadPositionFilter(MTFAC.minMedianReadPosition));
         filters.add(new MinAlleleFractionFilter(MTFAC.minAf));
@@ -308,7 +309,7 @@ public class Mutect2FilteringEngine {
                 return Arrays.stream(extractDir.listFiles());
             }).collect(Collectors.toList());
 
-            filters.add(new ReadOrientationFilter(artifactTables));
+            filters.add(new ReadOrientationFilter(artifactTables, MTFAC.ffpeMode, MTFAC.ffpeDeaminationPriorBoost));
         }
 
         if (!MTFAC.mitochondria && !MTFAC.microbial) {

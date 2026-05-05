@@ -24,3 +24,10 @@ Each filter applies a named FILTER tag (e.g., `contamination`, `orientation_bias
 ### Threshold Calibration
 - Default thresholds are calibrated for ≥ 90 % sensitivity at ≤ 5 % FDR for variants at ≥ 10 % VAF.
 - Users may adjust `--max-contamination`, `--min-allele-fraction`, and other thresholds for specific use cases.
+
+### FFPE Mode
+- `--ffpe-mode` enables a stricter calibration tailored to formalin-fixed paraffin-embedded (FFPE) samples, where cytosine deamination produces a strand-biased C→T (and reverse-complement G→A) artifact signature that inflates the somatic false-positive rate under default thresholds.
+- When enabled, the read-orientation artifact posterior is multiplied by `--ffpe-deamination-prior-boost` (default 3.0) **only** for C>T and G>A substitutions; all other substitution classes retain their stock calibration.
+- The contamination estimate consumed by the contamination filter is multiplied by `--ffpe-contamination-boost` (default 1.5), biasing low-AF calls toward the contamination/artifact hypothesis.
+- Both boosts are gated on `--ffpe-mode` and clamped to ≥ 1.0; the default invocation of `FilterMutectCalls` is unchanged.
+- For best performance, supply `--orientation-bias-artifact-priors` learned from an FFPE-matched reference panel via `LearnReadOrientationModel`.
